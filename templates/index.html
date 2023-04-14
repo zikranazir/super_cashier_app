@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Check Order</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+            color: blue;
+        }
+        p.lead {
+            margin-bottom: 1rem;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        td[contenteditable="true"] {
+            border: 2px solid blue;
+        }
+    </style>
+
+    <script>
+        // delete item
+        $(document).on('click', '.delete-item', function() {
+            var nama_item = $(this).attr('name');
+            var row = $(this).closest('tr');
+            if (confirm(`Apakah anda akan menghapus ${nama_item}?`)) {
+                $.ajax({
+                    url: `/delete_item/${nama_item}`,
+                    type: 'POST',
+                    data: {
+                        'name': nama_item
+                    },
+                    success: function(response) {
+                        row.remove();
+                        window.location.reload();
+                    }
+                });
+            }
+        });
+
+        // update item
+        $(document).on('click', '.edit-item', function() {
+            $(this).closest('tr').find('td:not(:last-child)').slice(1,4).attr('contenteditable', 'true').addClass('editable');
+            $(this).removeClass('edit-item').addClass('update-item').text('Update');
+        });
+
+        $(document).on('click', '.update-item', function() {
+            var row = $(this).closest('tr');
+            var columns = row.find('td:not(:last-child)').slice(1,4);
+            var item = {
+                'name': columns.eq(0).text(),
+                'quantity': columns.eq(1).text(),
+                'price': columns.eq(2).text(),
+            };
+            
+            // Send data to update_item route
+            $.ajax({
+                url: `/update_item`,
+                type: 'POST',
+                data: item,
+                contentType: 'application/x-www-form-urlencoded',
+                success: function(response) {
+                    // Reload page after updating item
+                    window.location.reload();
+                }
+            });
+        });
+
+        </script>
+
+  </head>
+  <body>
+    <h1>Self Service Cashier</h1>
+    <div class="container">
+        <!-- Add Item Form -->
+        <div class="row">
+            <div class="col-sm-12">
+                <h2>Tambah Item</h2>
+                <form method="post" action="/add_item">
+                    <div class="form-group">
+                        <label for="nama_item">Nama Item</label>
+                        <input type="text" class="form-control" id="nama_item" name="nama_item" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jumlah_item">Jumlah Item</label>
+                        <input type="number" class="form-control" id="jumlah_item" name="jumlah_item" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="harga">Harga</label>
+                        <input type="number" class="form-control" id="harga" name="harga" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Tambah Item</button>
+                </form>
+            </div>
+        </div>    
+            <!-- Check Order Table -->
+            <div>
+                <h2 class="my-4">Check Order</h2>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">No</th>
+                            <th scope="col">Nama Item</th>
+                            <th scope="col">Jumlah Item</th>
+                            <th scope="col">Harga/Item</th>
+                            <th scope="col">Total Harga</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in table %}
+                        <tr>
+                            <td>{{ row[0] }}</td>
+                            <td name='{{ row[1] }}'>{{ row[1] }}</td>
+                            <td>{{ row[2] }}</td>
+                            <td>{{ row[3] }}</td>
+                            <td>{{ row[4] }}</td>
+                            <td><button  type="button" class="btn btn-primary edit-item" data-id="{{ row[2] }}">Edit</button></td>
+                            <td><button type="button" class="btn btn-danger delete-item" name="{{ row[1] }}">Delete</button></td>
+                            <td><button type="button" class="btn btn-success update-item" style="display: none;">Update</button></td>
+                        </tr>
+                        {% endfor %}
+                        <tr>
+                            <td colspan="4" class="text-right"><strong>Total Harga Keseluruhan:</strong></td>
+                            <td><strong>{{ total_harga }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="btn-container">
+                <button class="btn btn-success" onclick="window.location.href='/checkout'">Checkout</button>
+            </div>
+        </div>
+    </div>
+  </body>
+</html>
