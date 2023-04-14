@@ -1,8 +1,6 @@
 # **Super Cashier 😃**
 
- <center>
-    <img src="/src/fearless.png" alt="logo">
-</center>
+![alt](/src/Fearless.png)
 
     Disclaimer: 
     This repository is an individual project created for the Software and Data Engineering course at PACMANN.
